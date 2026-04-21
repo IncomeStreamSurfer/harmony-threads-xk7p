@@ -1,0 +1,42 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { requireAdmin } from '../../lib/requireAdmin';
+import { ssrClient } from '../../lib/supabase';
+
+const gate = await requireAdmin(Astro);
+if (gate) return gate;
+
+const sb = ssrClient(Astro.cookies);
+const { data: messages } = await sb
+  .from('contact_messages')
+  .select('*')
+  .order('created_at', { ascending: false });
+---
+
+<AdminLayout title="Messages">
+  <div style="display:grid; gap:12px;">
+    {(messages ?? []).map(m => (
+      <div style={`background:#1A1A1A; border:1px solid ${m.read ? 'rgba(255,255,255,0.06)' : 'rgba(200,169,110,0.25)'}; border-radius:6px; padding:20px;`}>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <div>
+            <span style="font-weight:600; color:#F0EDE8; font-size:14px;">{m.name}</span>
+            <span style="color:#9A9189; font-size:12px; margin-left:8px;">{m.email}</span>
+          </div>
+          <span style="font-size:11px; color:#9A9189;">
+            {m.created_at ? new Date(m.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : ''}
+          </span>
+        </div>
+        <p style="color:#9A9189; font-size:13px; line-height:1.6; margin:0 0 12px;">{m.message}</p>
+        <a href={`mailto:${m.email}?subject=Re: your message to Harmony Threads`}
+          style="font-size:12px; color:#C8A96E; text-decoration:none;">
+          Reply via email →
+        </a>
+      </div>
+    ))}
+    {(!messages || messages.length === 0) && (
+      <div style="text-align:center; padding:40px; background:#1A1A1A; border-radius:6px; color:#9A9189; border:1px solid rgba(255,255,255,0.08);">
+        No messages yet. Contact form submissions appear here.
+      </div>
+    )}
+  </div>
+</AdminLayout>

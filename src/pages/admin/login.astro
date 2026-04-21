@@ -1,0 +1,93 @@
+---
+import '../../styles/global.css';
+
+const renderedAt = Date.now();
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Login — Harmony Threads</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body style="font-family:'Manrope',system-ui,sans-serif; background:#0F0F0F; color:#F0EDE8; margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;">
+  <div style="max-width:380px; width:100%; padding:0 24px;">
+    <div style="text-align:center; margin-bottom:32px;">
+      <svg width="36" height="36" viewBox="0 0 28 28" fill="none" style="display:inline-block; margin-bottom:12px;">
+        <circle cx="14" cy="14" r="13" stroke="#C8A96E" stroke-width="1.5"/>
+        <text x="14" y="19" text-anchor="middle" fill="#C8A96E" font-size="14" font-family="Georgia,serif" font-weight="700">H</text>
+      </svg>
+      <h1 style="font-size:1.25rem; font-weight:600; color:#F0EDE8; margin:0;">Admin Login</h1>
+      <p style="font-size:13px; color:#9A9189; margin:8px 0 0;">Enter your email to receive a sign-in link.</p>
+    </div>
+
+    <form id="login-form" style="background:#1A1A1A; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:28px;">
+      <input type="hidden" name="renderedAt" value={renderedAt} />
+
+      <label style="display:block; margin-bottom:16px;">
+        <span style="font-size:12px; color:#9A9189; display:block; margin-bottom:6px;">Email address</span>
+        <input type="email" id="email" name="email" required placeholder="you@example.com"
+          style="width:100%; background:#0F0F0F; border:1px solid rgba(255,255,255,0.15); color:#F0EDE8; padding:10px 12px; border-radius:4px; font-size:13px; box-sizing:border-box; outline:none;" />
+      </label>
+
+      <button type="submit" id="submit-btn"
+        style="width:100%; background:#C8A96E; color:#0F0F0F; padding:10px; border-radius:4px; border:none; font-size:13px; font-weight:600; cursor:pointer;">
+        Send sign-in link
+      </button>
+
+      <div id="status" style="margin-top:16px; font-size:13px; text-align:center; display:none;"></div>
+    </form>
+
+    <p style="text-align:center; margin-top:20px;">
+      <a href="/" style="font-size:12px; color:#9A9189; text-decoration:none;">← Back to site</a>
+    </p>
+  </div>
+
+  <script>
+    const PUBLIC_SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+    const PUBLIC_SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+    const form = document.getElementById('login-form') as HTMLFormElement;
+    const btn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const status = document.getElementById('status')!;
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (document.getElementById('email') as HTMLInputElement).value.trim();
+      if (!email) return;
+
+      btn.textContent = 'Sending…';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/admin/magic-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const json = await res.json();
+        if (json.ok) {
+          status.style.display = 'block';
+          status.style.color = '#4ade80';
+          status.textContent = '✓ Check your email for the sign-in link.';
+          btn.style.display = 'none';
+        } else {
+          status.style.display = 'block';
+          status.style.color = '#f87171';
+          status.textContent = json.error ?? 'Something went wrong.';
+          btn.textContent = 'Send sign-in link';
+          btn.disabled = false;
+        }
+      } catch {
+        status.style.display = 'block';
+        status.style.color = '#f87171';
+        status.textContent = 'Network error — please try again.';
+        btn.textContent = 'Send sign-in link';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

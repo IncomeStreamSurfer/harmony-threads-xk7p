@@ -1,0 +1,97 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { requireAdmin } from '../../../lib/requireAdmin';
+import { ssrClient } from '../../../lib/supabase';
+
+const gate = await requireAdmin(Astro);
+if (gate) return gate;
+
+const sb = ssrClient(Astro.cookies);
+const { id } = Astro.params;
+const { data: product } = await sb.from('products').select('*').eq('id', id).single();
+if (!product) return new Response('Not found', { status: 404 });
+---
+
+<AdminLayout title={`Edit: ${product.name}`}>
+  <form method="POST" action={`/api/admin/products/${product.id}`} style="max-width:760px;">
+    <div style="display:grid; gap:20px;">
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <label style="display:block;">
+          <span style="font-size:12px; color:#9A9189; display:block; margin-bottom:6px;">Name *</span>
+          <input type="text" name="name" value={product.name} required
+            style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.15); color:#F0EDE8; padding:8px 12px; border-radius:4px; font-size:13px; box-sizing:border-box;" />
+        </label>
+        <label style="display:block;">
+          <span style="font-size:12px; color:#9A9189; display:block; margin-bottom:6px;">Slug *</span>
+          <input type="text" name="slug" value={product.slug} required
+            style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.15); color:#F0EDE8; padding:8px 12px; border-radius:4px; font-size:13px; font-family:monospace; box-sizing:border-box;" />
+        </label>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <label style="display:block;">
+          <span style="font-size:12px; color:#9A9189; display:block; margin-bottom:6px;">Price (cents) *</span>
+          <input type="number" name="price_pence" value={product.price_pence} required
+            style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.15); color:#F0EDE8; padding:8px 12px; border-radius:4px; font-size:13px; box-sizing:border-box;" />
+        </label>
+        <label style="display:block;">
+          <span style="font-size:12px; color:#9A9189; display:block; margin-bottom:6px;">Compare-at (cents)</span>
+          <input type="number" name="compare_at_pence" value={product.compare_at_pence ?? ''}
+            style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.15); color:#F0EDE8; padding:8px 12px; border-radius:4px; font-size:13px; box-sizing:border-box;" />
+        </label>
+      </div>
+
+      <label style="display:block;">
+        <span style="font-size:12px; color:#9A9189; display:block; margin-bottom:6px;">Description</span>
+        <textarea name="description" rows="3"
+          style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.15); color:#F0EDE8; padding:8px 12px; border-radius:4px; font-size:13px; resize:vertical; box-sizing:border-box;">{product.description ?? ''}</textarea>
+      </label>
+
+      <label style="display:block;">
+        <span style="font-size:12px; color:#9A9189; display:block; margin-bottom:6px;">Body HTML</span>
+        <textarea name="body_html" rows="10"
+          style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.15); color:#F0EDE8; padding:8px 12px; border-radius:4px; font-size:12px; font-family:monospace; resize:vertical; box-sizing:border-box;">{product.body_html ?? ''}</textarea>
+      </label>
+
+      <label style="display:block;">
+        <span style="font-size:12px; color:#9A9189; display:block; margin-bottom:6px;">Image URL</span>
+        <input type="url" name="image_url" value={product.image_url ?? ''}
+          style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.15); color:#F0EDE8; padding:8px 12px; border-radius:4px; font-size:13px; box-sizing:border-box;" />
+      </label>
+
+      <label style="display:block;">
+        <span style="font-size:12px; color:#9A9189; display:block; margin-bottom:6px;">Meta title</span>
+        <input type="text" name="meta_title" value={product.meta_title ?? ''}
+          style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.15); color:#F0EDE8; padding:8px 12px; border-radius:4px; font-size:13px; box-sizing:border-box;" />
+      </label>
+
+      <label style="display:block;">
+        <span style="font-size:12px; color:#9A9189; display:block; margin-bottom:6px;">Meta description</span>
+        <textarea name="meta_description" rows="2"
+          style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.15); color:#F0EDE8; padding:8px 12px; border-radius:4px; font-size:13px; box-sizing:border-box;">{product.meta_description ?? ''}</textarea>
+      </label>
+
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+        <input type="checkbox" name="published" checked={!!product.published_at}
+          style="accent-color:#C8A96E; width:16px; height:16px;" />
+        <span style="font-size:13px; color:#F0EDE8;">Published (visible on storefront)</span>
+      </label>
+
+      <div style="display:flex; gap:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.08);">
+        <button type="submit"
+          style="background:#C8A96E; color:#0F0F0F; padding:10px 24px; border-radius:4px; border:none; font-size:13px; font-weight:600; cursor:pointer;">
+          Save changes
+        </button>
+        <a href="/admin/products"
+          style="border:1px solid rgba(255,255,255,0.2); color:#9A9189; padding:10px 16px; border-radius:4px; text-decoration:none; font-size:13px;">
+          Cancel
+        </a>
+        <a href={`/product/${product.slug}`} target="_blank"
+          style="color:#9A9189; padding:10px 0; font-size:13px; text-decoration:none; margin-left:auto;">
+          View on site ↗
+        </a>
+      </div>
+    </div>
+  </form>
+</AdminLayout>

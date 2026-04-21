@@ -1,0 +1,93 @@
+---
+import Base from '../../layouts/Base.astro';
+import { anonClient } from '../../lib/supabase';
+
+const sb = anonClient();
+let products: any[] = [];
+if (sb) {
+  const { data } = await sb.from('products').select('*').contains('tags', ['Vintage']);
+  products = data ?? [];
+}
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://harmony-threads-xk7p.vercel.app';
+
+const collectionSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Vintage Music Merch | Harmony Threads",
+  "url": `${siteUrl}/tags/vintage`,
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": products.map((p, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "url": `${siteUrl}/product/${p.slug}`,
+      "name": p.name
+    }))
+  }
+};
+---
+
+<Base
+  title="Vintage Music Merch | Harmony Threads"
+  description="Vintage-styled music merchandise at Harmony Threads. Rock band graphic tees with a classic, worn-in aesthetic — unisex sizing for true music fans."
+  structuredData={collectionSchema}
+  tags={['vintage music merch', 'vintage band tees', 'retro music apparel']}
+>
+  <div class="pt-32 pb-20 max-w-7xl mx-auto px-6">
+    <nav class="flex items-center gap-2 text-xs text-muted mb-10" style="font-family:'Manrope',system-ui,sans-serif;">
+      <a href="/" class="hover:text-cream transition-colors">Home</a>
+      <span>/</span>
+      <a href="/shop" class="hover:text-cream transition-colors">Shop</a>
+      <span>/</span>
+      <span class="text-cream">Vintage</span>
+    </nav>
+
+    <div class="mb-14">
+      <p class="text-gold text-xs font-semibold tracking-widest uppercase mb-3" style="font-family:'Manrope',system-ui,sans-serif;">Tag: Vintage</p>
+      <h1 class="text-5xl font-semibold text-cream leading-tight mb-6" style="font-family:'Playfair Display',Georgia,serif;">
+        Vintage music merch
+      </h1>
+      <div class="max-w-2xl text-muted leading-relaxed" style="font-family:'Manrope',system-ui,sans-serif;">
+        <p class="mb-4">Vintage-styled music merchandise that honours the heritage of rock without feeling like a costume. Our graphic tees are designed with the same spirit as the band shirts that lived in the back of a station wagon on a 1975 summer tour — wearable, lasting, and genuinely cool.</p>
+        <p>Each piece in the vintage collection uses a muted, faded-in colour palette and bold graphic work that echoes the poster art of rock's golden decades. The cotton softens with every wash, and the prints are meant to age gracefully alongside you.</p>
+      </div>
+    </div>
+
+    {products.length === 0 ? (
+      <p class="text-muted text-center py-16" style="font-family:'Manrope',system-ui,sans-serif;">Loading products…</p>
+    ) : (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {products.map(p => {
+          const price = `$${(p.price_pence / 100).toFixed(2)}`;
+          const compareAt = p.compare_at_pence ? `$${(p.compare_at_pence / 100).toFixed(2)}` : null;
+          return (
+            <article class="group">
+              <a href={`/product/${p.slug}`} class="block">
+                <div class="overflow-hidden rounded-sm aspect-[3/4] bg-charcoal-2 mb-5">
+                  {p.image_url ? (
+                    <img src={p.image_url} alt={`${p.name} — Harmony Threads vintage`}
+                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy"/>
+                  ) : (
+                    <div class="w-full h-full flex items-center justify-center text-4xl">👕</div>
+                  )}
+                </div>
+                <h2 class="text-cream font-medium mb-1" style="font-family:'Playfair Display',Georgia,serif; font-size:1.1rem;">{p.name}</h2>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-cream font-semibold" style="font-family:'Manrope',system-ui,sans-serif;">{price}</span>
+                  {compareAt && <span class="text-muted text-sm line-through" style="font-family:'Manrope',system-ui,sans-serif;">{compareAt}</span>}
+                </div>
+              </a>
+            </article>
+          );
+        })}
+      </div>
+    )}
+
+    <div class="mt-16 pt-10 border-t border-white/10 flex flex-wrap gap-6">
+      <a href="/collections/graphic-tees" class="text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">All graphic tees →</a>
+      <a href="/collections/lifestyle" class="text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">Lifestyle →</a>
+      <a href="/shop" class="text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">All products →</a>
+    </div>
+  </div>
+</Base>

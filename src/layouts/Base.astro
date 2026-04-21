@@ -1,0 +1,167 @@
+---
+import SEOHead from '../components/SEOHead.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  ogType?: string;
+  canonicalUrl?: string;
+  structuredData?: object | object[];
+  tags?: string[];
+  noindex?: boolean;
+}
+
+const { title, description, ogImage, ogType, canonicalUrl, structuredData, tags, noindex } = Astro.props;
+
+const navLinks = [
+  { href: '/shop', label: 'Shop' },
+  { href: '/collections/graphic-tees', label: 'Graphic Tees' },
+  { href: '/collections/digital-downloads', label: 'Digital' },
+  { href: '/about', label: 'Our Story' },
+  { href: '/contact', label: 'Contact' },
+];
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <SEOHead
+    title={title}
+    description={description}
+    ogImage={ogImage}
+    ogType={ogType}
+    canonicalUrl={canonicalUrl}
+    structuredData={structuredData}
+    tags={tags}
+    noindex={noindex}
+  />
+</head>
+<body class="bg-charcoal text-cream min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header id="site-header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3 group">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="14" cy="14" r="13" stroke="#C8A96E" stroke-width="1.5"/>
+          <text x="14" y="19" text-anchor="middle" fill="#C8A96E" font-size="14" font-family="Georgia,serif" font-weight="700">H</text>
+        </svg>
+        <span class="font-display text-lg font-semibold tracking-tight text-cream group-hover:text-gold transition-colors" style="font-family:'Playfair Display',Georgia,serif;">
+          Harmony Threads
+        </span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8">
+        {navLinks.map(l => (
+          <a href={l.href}
+            class="text-sm font-medium text-muted hover:text-cream transition-colors tracking-wide"
+            style="font-family:'Manrope',system-ui,sans-serif;">
+            {l.label}
+          </a>
+        ))}
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <a href="/shop"
+          class="hidden md:inline-flex items-center gap-2 bg-gold text-charcoal text-sm font-semibold px-4 py-2 rounded-sm hover:bg-gold-light transition-colors"
+          style="font-family:'Manrope',system-ui,sans-serif;">
+          Shop Now
+        </a>
+        <!-- Mobile menu button -->
+        <button id="mobile-menu-btn" class="md:hidden p-2 text-muted hover:text-cream" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile nav -->
+    <div id="mobile-nav" class="hidden md:hidden bg-charcoal-2 border-t border-white/10">
+      <nav class="px-6 py-4 flex flex-col gap-4">
+        {navLinks.map(l => (
+          <a href={l.href} class="text-sm text-muted hover:text-cream transition-colors py-1"
+            style="font-family:'Manrope',system-ui,sans-serif;">{l.label}</a>
+        ))}
+        <a href="/shop" class="mt-2 bg-gold text-charcoal text-sm font-semibold px-4 py-2 rounded-sm text-center"
+          style="font-family:'Manrope',system-ui,sans-serif;">Shop Now</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    <slot />
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/10 mt-20">
+    <div class="max-w-7xl mx-auto px-6 py-16">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        <div class="md:col-span-2">
+          <a href="/" class="flex items-center gap-3 mb-4">
+            <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+              <circle cx="14" cy="14" r="13" stroke="#C8A96E" stroke-width="1.5"/>
+              <text x="14" y="19" text-anchor="middle" fill="#C8A96E" font-size="14" font-family="Georgia,serif" font-weight="700">H</text>
+            </svg>
+            <span class="font-display text-base font-semibold text-cream" style="font-family:'Playfair Display',Georgia,serif;">Harmony Threads</span>
+          </a>
+          <p class="text-muted text-sm leading-relaxed max-w-xs" style="font-family:'Manrope',system-ui,sans-serif;">
+            Music-inspired apparel and digital goods for those who live and breathe the sound.
+          </p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-gold tracking-widest uppercase mb-4" style="font-family:'Manrope',system-ui,sans-serif;">Shop</p>
+          <ul class="space-y-3">
+            {[
+              { href: '/shop', label: 'All Products' },
+              { href: '/collections/graphic-tees', label: 'Graphic Tees' },
+              { href: '/collections/digital-downloads', label: 'Digital Downloads' },
+              { href: '/collections/lifestyle', label: 'Lifestyle' },
+            ].map(l => (
+              <li><a href={l.href} class="text-sm text-muted hover:text-cream transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">{l.label}</a></li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-gold tracking-widest uppercase mb-4" style="font-family:'Manrope',system-ui,sans-serif;">Company</p>
+          <ul class="space-y-3">
+            {[
+              { href: '/about', label: 'Our Story' },
+              { href: '/contact', label: 'Contact' },
+              { href: '/shop', label: 'Gift Cards' },
+            ].map(l => (
+              <li><a href={l.href} class="text-sm text-muted hover:text-cream transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">{l.label}</a></li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="text-xs text-muted" style="font-family:'Manrope',system-ui,sans-serif;">
+          © 2026 Harmony Threads. All rights reserved.
+        </p>
+        <p class="text-xs text-muted" style="font-family:'Manrope',system-ui,sans-serif;">
+          Crafted with ♪ for music lovers
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Sticky header
+    const header = document.getElementById('site-header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 60) {
+        header?.classList.add('bg-charcoal/95', 'backdrop-blur-md', 'border-b', 'border-white/10');
+      } else {
+        header?.classList.remove('bg-charcoal/95', 'backdrop-blur-md', 'border-b', 'border-white/10');
+      }
+    });
+
+    // Mobile menu
+    const btn = document.getElementById('mobile-menu-btn');
+    const nav = document.getElementById('mobile-nav');
+    btn?.addEventListener('click', () => nav?.classList.toggle('hidden'));
+  </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+---
+import Base from '../../layouts/Base.astro';
+import { anonClient } from '../../lib/supabase';
+
+const sb = anonClient();
+let products: any[] = [];
+if (sb) {
+  const { data } = await sb.from('products').select('*').contains('tags', ['Music History']);
+  products = data ?? [];
+}
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://harmony-threads-xk7p.vercel.app';
+
+const collectionSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Music History | Harmony Threads",
+  "url": `${siteUrl}/tags/music-history`,
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": products.map((p, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "url": `${siteUrl}/product/${p.slug}`,
+      "name": p.name
+    }))
+  }
+};
+---
+
+<Base
+  title="Music History Books & Digital Guides | Harmony Threads"
+  description="Deepen your knowledge of rock's history with digital guides from Harmony Publishing. Covers six decades of rock music — available as PDF, Kindle, and Audiobook."
+  structuredData={collectionSchema}
+  tags={['music history books', 'rock history ebook', 'rock music guide']}
+>
+  <div class="pt-32 pb-20 max-w-7xl mx-auto px-6">
+    <nav class="flex items-center gap-2 text-xs text-muted mb-10" style="font-family:'Manrope',system-ui,sans-serif;">
+      <a href="/" class="hover:text-cream transition-colors">Home</a>
+      <span>/</span>
+      <a href="/shop" class="hover:text-cream transition-colors">Shop</a>
+      <span>/</span>
+      <span class="text-cream">Music History</span>
+    </nav>
+
+    <div class="mb-14">
+      <p class="text-gold text-xs font-semibold tracking-widest uppercase mb-3" style="font-family:'Manrope',system-ui,sans-serif;">Tag: Music History</p>
+      <h1 class="text-5xl font-semibold text-cream leading-tight mb-6" style="font-family:'Playfair Display',Georgia,serif;">
+        Music history guides
+      </h1>
+      <div class="max-w-2xl text-muted leading-relaxed" style="font-family:'Manrope',system-ui,sans-serif;">
+        <p class="mb-4">Rock didn't emerge from nowhere — it was built on two centuries of American music, a post-war teenage restlessness, and a handful of people who picked up an electric guitar and changed everything. Our music history collection covers the full arc, from the Delta blues origins that fed Chuck Berry's riffs to the grunge scene that shocked mainstream radio in the early 1990s.</p>
+        <p>Harmony Publishing's digital guides are written for fans who want the real story — the context, the rivalries, the recording sessions, and the social forces that gave each era its sound. Available in all digital formats, immediately after purchase.</p>
+      </div>
+    </div>
+
+    {products.length === 0 ? (
+      <p class="text-muted text-center py-16" style="font-family:'Manrope',system-ui,sans-serif;">Loading products…</p>
+    ) : (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {products.map(p => {
+          const price = `$${(p.price_pence / 100).toFixed(2)}`;
+          return (
+            <article class="group">
+              <a href={`/product/${p.slug}`} class="block">
+                <div class="overflow-hidden rounded-sm aspect-[3/4] bg-charcoal-2 mb-5 flex items-center justify-center p-8">
+                  <div class="text-center">
+                    <div class="text-6xl mb-3">🎸</div>
+                    <p class="text-cream font-semibold" style="font-family:'Playfair Display',Georgia,serif;">{p.name}</p>
+                  </div>
+                </div>
+                <h2 class="text-cream font-medium mb-1" style="font-family:'Playfair Display',Georgia,serif; font-size:1.1rem;">{p.name}</h2>
+                <p class="text-cream font-semibold mt-1" style="font-family:'Manrope',system-ui,sans-serif;">{price}</p>
+              </a>
+            </article>
+          );
+        })}
+      </div>
+    )}
+
+    <div class="mt-16 pt-10 border-t border-white/10 flex flex-wrap gap-6">
+      <a href="/collections/digital-downloads" class="text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">All digital downloads →</a>
+      <a href="/tags/vintage" class="text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">Vintage merch →</a>
+      <a href="/shop" class="text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">All products →</a>
+    </div>
+  </div>
+</Base>

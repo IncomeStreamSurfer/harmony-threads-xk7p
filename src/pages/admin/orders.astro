@@ -1,0 +1,53 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { requireAdmin } from '../../lib/requireAdmin';
+import { ssrClient } from '../../lib/supabase';
+
+const gate = await requireAdmin(Astro);
+if (gate) return gate;
+
+const sb = ssrClient(Astro.cookies);
+const { data: orders } = await sb
+  .from('orders')
+  .select('*')
+  .order('created_at', { ascending: false })
+  .limit(100);
+---
+
+<AdminLayout title="Orders">
+  <div style="background:#1A1A1A; border:1px solid rgba(255,255,255,0.08); border-radius:6px; overflow:hidden;">
+    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+      <thead>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+          <th style="text-align:left; padding:12px 16px; color:#9A9189; font-weight:500;">Order</th>
+          <th style="text-align:left; padding:12px 16px; color:#9A9189; font-weight:500;">Customer</th>
+          <th style="text-align:left; padding:12px 16px; color:#9A9189; font-weight:500;">Total</th>
+          <th style="text-align:left; padding:12px 16px; color:#9A9189; font-weight:500;">Status</th>
+          <th style="text-align:left; padding:12px 16px; color:#9A9189; font-weight:500;">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {(orders ?? []).map(o => (
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:12px 16px; color:#9A9189; font-family:monospace; font-size:11px;">
+              {o.stripe_session_id?.slice(-12).toUpperCase() ?? 'N/A'}
+            </td>
+            <td style="padding:12px 16px; color:#F0EDE8;">{o.customer_email ?? '—'}</td>
+            <td style="padding:12px 16px; color:#C8A96E;">${((o.amount_total ?? 0) / 100).toFixed(2)}</td>
+            <td style="padding:12px 16px;">
+              <span style={`font-size:11px; padding:2px 8px; border-radius:9999px; ${o.status === 'paid' ? 'background:rgba(74,222,128,0.1);color:#4ade80' : 'background:rgba(255,255,255,0.05);color:#9A9189'}`}>
+                {o.status ?? 'pending'}
+              </span>
+            </td>
+            <td style="padding:12px 16px; color:#9A9189; font-size:11px;">
+              {o.created_at ? new Date(o.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—'}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    {(!orders || orders.length === 0) && (
+      <div style="text-align:center; padding:40px; color:#9A9189;">No orders yet. When customers check out, orders appear here.</div>
+    )}
+  </div>
+</AdminLayout>

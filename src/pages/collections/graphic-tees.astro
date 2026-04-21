@@ -1,0 +1,136 @@
+---
+import Base from '../../layouts/Base.astro';
+import { anonClient } from '../../lib/supabase';
+import { safeHtml } from '../../lib/sanitize';
+
+const sb = anonClient();
+let category: any = null;
+let products: any[] = [];
+
+if (sb) {
+  const [catRes, prodRes] = await Promise.all([
+    sb.from('categories').select('*').eq('slug', 'graphic-tees').maybeSingle(),
+    sb.from('products').select('*').contains('tags', ['Graphic Tee']),
+  ]);
+  category = catRes.data;
+  products = prodRes.data ?? [];
+}
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://harmony-threads-xk7p.vercel.app';
+
+const collectionSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Graphic Tees | Harmony Threads",
+  "url": `${siteUrl}/collections/graphic-tees`,
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": products.map((p, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "url": `${siteUrl}/product/${p.slug}`,
+      "name": p.name
+    }))
+  }
+};
+
+const breadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": siteUrl },
+    { "@type": "ListItem", "position": 2, "name": "Shop", "item": `${siteUrl}/shop` },
+    { "@type": "ListItem", "position": 3, "name": "Graphic Tees", "item": `${siteUrl}/collections/graphic-tees` }
+  ]
+};
+---
+
+<Base
+  title="Rock Band Graphic Tees | Harmony Threads"
+  description="Shop rock band graphic t-shirts at Harmony Threads. The Band tee in green, gray, and red — unisex sizing S–XL. Free shipping on orders over $50."
+  structuredData={[collectionSchema, breadcrumb]}
+  tags={['graphic tees', 'rock band tshirts', 'music merch', 'vintage tees']}
+>
+  <div class="pt-32 pb-20 max-w-7xl mx-auto px-6">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-xs text-muted mb-10" style="font-family:'Manrope',system-ui,sans-serif;">
+      <a href="/" class="hover:text-cream transition-colors">Home</a>
+      <span>/</span>
+      <a href="/shop" class="hover:text-cream transition-colors">Shop</a>
+      <span>/</span>
+      <span class="text-cream">Graphic Tees</span>
+    </nav>
+
+    <div class="grid lg:grid-cols-3 gap-16 mb-16">
+      <div class="lg:col-span-2">
+        <p class="text-gold text-xs font-semibold tracking-widest uppercase mb-3" style="font-family:'Manrope',system-ui,sans-serif;">Collection</p>
+        <h1 class="text-5xl font-semibold text-cream leading-tight mb-6" style="font-family:'Playfair Display',Georgia,serif;">
+          Graphic Tees
+        </h1>
+
+        {category?.body_html ? (
+          <div class="text-muted leading-relaxed space-y-3 [&_p]:mb-3 [&_strong]:text-cream"
+            style="font-family:'Manrope',system-ui,sans-serif;"
+            set:html={safeHtml(category.body_html)} />
+        ) : (
+          <div class="text-muted leading-relaxed" style="font-family:'Manrope',system-ui,sans-serif;">
+            <p class="mb-4">Our graphic tee collection celebrates the artists and sounds that shaped rock history. Each design is printed on 150g ring-spun cotton and sized unisex from Small to XL. Whether you lived through the era or discovered it through a playlist, these tees wear the music on your sleeve — literally.</p>
+            <p>The Band T-Shirt is our flagship piece: a bold graphic that captures the group's iconic visual identity, available in forest green, charcoal gray, and bold red. Every order ships within 2 business days. Free returns on unworn items within 30 days.</p>
+          </div>
+        )}
+      </div>
+      <div>
+        <div class="bg-charcoal-2 rounded-sm p-6 border border-white/10">
+          <p class="text-xs font-semibold text-gold tracking-widest uppercase mb-4" style="font-family:'Manrope',system-ui,sans-serif;">Collection details</p>
+          <ul class="space-y-3 text-sm text-muted" style="font-family:'Manrope',system-ui,sans-serif;">
+            <li>✓ 150g ring-spun cotton</li>
+            <li>✓ Unisex: Small — XL</li>
+            <li>✓ 3 colorways per design</li>
+            <li>✓ Ships within 2 business days</li>
+            <li>✓ Free returns (30 days, unworn)</li>
+          </ul>
+          <a href="/shop" class="block mt-6 text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">← Back to all products</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products grid -->
+    {products.length === 0 ? (
+      <p class="text-muted text-center py-16" style="font-family:'Manrope',system-ui,sans-serif;">Products loading…</p>
+    ) : (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {products.map(p => {
+          const price = `$${(p.price_pence / 100).toFixed(2)}`;
+          const compareAt = p.compare_at_pence ? `$${(p.compare_at_pence / 100).toFixed(2)}` : null;
+          return (
+            <article class="group">
+              <a href={`/product/${p.slug}`} class="block">
+                <div class="overflow-hidden rounded-sm aspect-[3/4] bg-charcoal-2 mb-5 relative">
+                  {p.image_url ? (
+                    <img src={p.image_url} alt={`${p.name} — Harmony Threads`}
+                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy"/>
+                  ) : (
+                    <div class="w-full h-full flex items-center justify-center text-4xl">👕</div>
+                  )}
+                </div>
+                <h2 class="text-cream font-medium mb-1 leading-snug" style="font-family:'Playfair Display',Georgia,serif; font-size:1.1rem;">{p.name}</h2>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="text-cream font-semibold" style="font-family:'Manrope',system-ui,sans-serif;">{price}</span>
+                  {compareAt && <span class="text-muted text-sm line-through" style="font-family:'Manrope',system-ui,sans-serif;">{compareAt}</span>}
+                </div>
+              </a>
+            </article>
+          );
+        })}
+      </div>
+    )}
+
+    <!-- Internal links -->
+    <div class="mt-16 pt-10 border-t border-white/10 flex flex-wrap gap-6">
+      <a href="/collections/digital-downloads" class="text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">Digital downloads →</a>
+      <a href="/collections/lifestyle" class="text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">Lifestyle goods →</a>
+      <a href="/about" class="text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">Our story →</a>
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,116 @@
+---
+import Base from '../layouts/Base.astro';
+import { anonClient } from '../lib/supabase';
+
+const sb = anonClient();
+let products: any[] = [];
+if (sb) {
+  const { data } = await sb.from('products').select('*').order('created_at');
+  products = data ?? [];
+}
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://harmony-threads-xk7p.vercel.app';
+
+const breadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": siteUrl },
+    { "@type": "ListItem", "position": 2, "name": "Shop", "item": `${siteUrl}/shop` }
+  ]
+};
+
+const itemList = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Shop All — Harmony Threads",
+  "url": `${siteUrl}/shop`,
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": products.map((p, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "url": `${siteUrl}/product/${p.slug}`,
+      "name": p.name
+    }))
+  }
+};
+---
+
+<Base
+  title="Shop All | Harmony Threads"
+  description="Browse all Harmony Threads products — rock graphic tees, digital music history downloads, and lifestyle goods for music lovers. Free shipping over $50."
+  structuredData={[breadcrumb, itemList]}
+>
+  <div class="pt-32 pb-20 max-w-7xl mx-auto px-6">
+    <div class="mb-12">
+      <p class="text-gold text-xs font-semibold tracking-widest uppercase mb-3" style="font-family:'Manrope',system-ui,sans-serif;">All Products</p>
+      <h1 class="text-5xl font-semibold text-cream leading-tight" style="font-family:'Playfair Display',Georgia,serif;">
+        The full collection
+      </h1>
+      <p class="text-muted mt-4 max-w-lg" style="font-family:'Manrope',system-ui,sans-serif;">
+        Graphic tees, digital downloads, and lifestyle goods — everything Harmony Threads makes, in one place.
+      </p>
+    </div>
+
+    <!-- Category filters -->
+    <div class="flex flex-wrap gap-3 mb-10">
+      {[
+        { label: 'All', href: '/shop' },
+        { label: 'Graphic Tees', href: '/collections/graphic-tees' },
+        { label: 'Digital', href: '/collections/digital-downloads' },
+        { label: 'Lifestyle', href: '/collections/lifestyle' },
+      ].map(f => (
+        <a href={f.href}
+          class={`px-4 py-2 text-sm border rounded-full transition-colors ${f.href === '/shop' ? 'border-gold bg-gold/10 text-gold' : 'border-white/20 text-muted hover:border-gold/50 hover:text-cream'}`}
+          style="font-family:'Manrope',system-ui,sans-serif;">
+          {f.label}
+        </a>
+      ))}
+    </div>
+
+    {products.length === 0 ? (
+      <div class="text-center py-24 text-muted">
+        <p style="font-family:'Manrope',system-ui,sans-serif;">Products loading — check back shortly.</p>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {products.map(p => {
+          const price = `$${(p.price_pence / 100).toFixed(2)}`;
+          const compareAt = p.compare_at_pence ? `$${(p.compare_at_pence / 100).toFixed(2)}` : null;
+          return (
+            <article class="group">
+              <a href={`/product/${p.slug}`} class="block">
+                <div class="overflow-hidden rounded-sm aspect-[3/4] bg-charcoal-2 mb-5 relative">
+                  {p.image_url ? (
+                    <img
+                      src={p.image_url}
+                      alt={`${p.name} — Harmony Threads`}
+                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div class="w-full h-full flex items-center justify-center text-4xl">🎵</div>
+                  )}
+                  {p.product_type === 'Digital book' && (
+                    <div class="absolute top-3 left-3">
+                      <span class="bg-charcoal/80 backdrop-blur-sm text-gold text-xs font-medium px-2.5 py-1 rounded-full border border-gold/30" style="font-family:'Manrope',system-ui,sans-serif;">
+                        Digital ↓
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <h2 class="text-cream font-medium mb-1 leading-snug" style="font-family:'Playfair Display',Georgia,serif; font-size:1.1rem;">{p.name}</h2>
+                <p class="text-muted text-sm leading-relaxed line-clamp-2 mb-3" style="font-family:'Manrope',system-ui,sans-serif;">{p.description}</p>
+                <div class="flex items-center gap-2">
+                  <span class="text-cream font-semibold" style="font-family:'Manrope',system-ui,sans-serif;">{price}</span>
+                  {compareAt && <span class="text-muted text-sm line-through" style="font-family:'Manrope',system-ui,sans-serif;">{compareAt}</span>}
+                </div>
+              </a>
+            </article>
+          );
+        })}
+      </div>
+    )}
+  </div>
+</Base>

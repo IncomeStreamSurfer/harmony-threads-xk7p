@@ -1,0 +1,44 @@
+---
+import Base from '../../layouts/Base.astro';
+
+const sessionId = Astro.url.searchParams.get('session_id') ?? '';
+---
+
+<Base
+  title="Order Confirmed | Harmony Threads"
+  description="Your Harmony Threads order has been confirmed. Thank you!"
+  noindex={true}
+>
+  <div class="min-h-screen flex items-center justify-center px-6 pt-20">
+    <div class="max-w-lg w-full text-center">
+      <div class="text-6xl mb-6">♪</div>
+      <h1 class="text-4xl font-semibold text-cream mb-4" style="font-family:'Playfair Display',Georgia,serif;">
+        Order confirmed
+      </h1>
+      <p class="text-muted mb-8 leading-relaxed" style="font-family:'Manrope',system-ui,sans-serif;">
+        Thank you for your purchase. You'll receive an email confirmation shortly. If you ordered a digital product, your download link will be in that email.
+      </p>
+      {sessionId && (
+        <p class="text-xs text-muted/60 mb-8 font-mono">Ref: {sessionId.slice(-12).toUpperCase()}</p>
+      )}
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/shop"
+          class="bg-gold text-charcoal font-semibold px-6 py-3 rounded-sm hover:bg-gold-light transition-colors text-sm"
+          style="font-family:'Manrope',system-ui,sans-serif;">
+          Continue shopping
+        </a>
+        <a href="/"
+          class="border border-white/20 text-muted hover:text-cream hover:border-white/40 px-6 py-3 rounded-sm transition-colors text-sm"
+          style="font-family:'Manrope',system-ui,sans-serif;">
+          Back to home
+        </a>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<script>
+  // Clear cart on successful order
+  localStorage.removeItem('ht_cart');
+  window.dispatchEvent(new Event('cart:updated'));
+</script>

@@ -1,0 +1,138 @@
+---
+import Base from '../../layouts/Base.astro';
+import { anonClient } from '../../lib/supabase';
+import { safeHtml } from '../../lib/sanitize';
+
+const sb = anonClient();
+let category: any = null;
+let products: any[] = [];
+
+if (sb) {
+  const [catRes, prodRes] = await Promise.all([
+    sb.from('categories').select('*').eq('slug', 'digital-downloads').maybeSingle(),
+    sb.from('products').select('*').eq('product_type', 'Digital book'),
+  ]);
+  category = catRes.data;
+  products = prodRes.data ?? [];
+}
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://harmony-threads-xk7p.vercel.app';
+
+const collectionSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Digital Downloads | Harmony Threads",
+  "url": `${siteUrl}/collections/digital-downloads`,
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": products.map((p, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "url": `${siteUrl}/product/${p.slug}`,
+      "name": p.name
+    }))
+  }
+};
+
+const breadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": siteUrl },
+    { "@type": "ListItem", "position": 2, "name": "Shop", "item": `${siteUrl}/shop` },
+    { "@type": "ListItem", "position": 3, "name": "Digital Downloads", "item": `${siteUrl}/collections/digital-downloads` }
+  ]
+};
+---
+
+<Base
+  title="Digital Downloads — Rock Music History | Harmony Threads"
+  description="Instant-access rock music history ebooks and audiobooks from Harmony Publishing. PDF, Kindle, and Audio formats included in one purchase."
+  structuredData={[collectionSchema, breadcrumb]}
+  tags={['rock music ebook', 'music history digital', 'digital download', 'rock audiobook']}
+>
+  <div class="pt-32 pb-20 max-w-7xl mx-auto px-6">
+
+    <nav class="flex items-center gap-2 text-xs text-muted mb-10" style="font-family:'Manrope',system-ui,sans-serif;">
+      <a href="/" class="hover:text-cream transition-colors">Home</a>
+      <span>/</span>
+      <a href="/shop" class="hover:text-cream transition-colors">Shop</a>
+      <span>/</span>
+      <span class="text-cream">Digital Downloads</span>
+    </nav>
+
+    <div class="grid lg:grid-cols-3 gap-16 mb-16">
+      <div class="lg:col-span-2">
+        <p class="text-gold text-xs font-semibold tracking-widest uppercase mb-3" style="font-family:'Manrope',system-ui,sans-serif;">Collection</p>
+        <h1 class="text-5xl font-semibold text-cream leading-tight mb-6" style="font-family:'Playfair Display',Georgia,serif;">
+          Digital Downloads
+        </h1>
+
+        {category?.body_html ? (
+          <div class="text-muted leading-relaxed space-y-3 [&_p]:mb-3 [&_strong]:text-cream"
+            style="font-family:'Manrope',system-ui,sans-serif;"
+            set:html={safeHtml(category.body_html)} />
+        ) : (
+          <div class="text-muted leading-relaxed" style="font-family:'Manrope',system-ui,sans-serif;">
+            <p class="mb-4">Knowledge of rock history delivered instantly to your inbox. Our digital library covers six decades of electric guitar, stadium anthems, and the bands that defined each era. All formats — PDF, Kindle/ePub, and Audiobook — are included in a single purchase, so you read or listen however suits you.</p>
+            <p>Downloads are available immediately after checkout. No waiting, no shipping. Perfect for the music fan who wants to go deeper than a Wikipedia rabbit hole. Every purchase is DRM-free — your files, forever.</p>
+          </div>
+        )}
+      </div>
+      <div>
+        <div class="bg-charcoal-2 rounded-sm p-6 border border-white/10">
+          <p class="text-xs font-semibold text-gold tracking-widest uppercase mb-4" style="font-family:'Manrope',system-ui,sans-serif;">What you get</p>
+          <ul class="space-y-3 text-sm text-muted" style="font-family:'Manrope',system-ui,sans-serif;">
+            <li>⚡ Instant delivery after purchase</li>
+            <li>📄 PDF, Kindle/ePub, and Audio</li>
+            <li>♾️ No DRM — yours to keep forever</li>
+            <li>📱 Read on any device</li>
+            <li>🎧 Listen on any podcast app</li>
+          </ul>
+          <a href="/shop" class="block mt-6 text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">← Back to all products</a>
+        </div>
+      </div>
+    </div>
+
+    {products.length === 0 ? (
+      <p class="text-muted text-center py-16" style="font-family:'Manrope',system-ui,sans-serif;">Products loading…</p>
+    ) : (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {products.map(p => {
+          const price = `$${(p.price_pence / 100).toFixed(2)}`;
+          return (
+            <article class="group">
+              <a href={`/product/${p.slug}`} class="block">
+                <div class="overflow-hidden rounded-sm aspect-[3/4] bg-charcoal-2 mb-5 relative flex items-center justify-center">
+                  <div class="text-center p-8">
+                    <div class="text-6xl mb-3">🎸</div>
+                    <p class="text-cream font-semibold text-lg" style="font-family:'Playfair Display',Georgia,serif;">{p.name}</p>
+                    <p class="text-muted text-xs mt-1" style="font-family:'Manrope',system-ui,sans-serif;">{p.vendor}</p>
+                    <div class="mt-3 flex gap-1 flex-wrap justify-center">
+                      {(p.variants ?? []).map((v: any) => (
+                        <span class="bg-gold/20 text-gold text-xs px-1.5 py-0.5 rounded">{v.format}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div class="absolute top-3 left-3">
+                    <span class="bg-charcoal/80 backdrop-blur-sm text-gold text-xs font-medium px-2.5 py-1 rounded-full border border-gold/30" style="font-family:'Manrope',system-ui,sans-serif;">
+                      Digital ↓
+                    </span>
+                  </div>
+                </div>
+                <h2 class="text-cream font-medium mb-1" style="font-family:'Playfair Display',Georgia,serif; font-size:1.1rem;">{p.name}</h2>
+                <p class="text-cream font-semibold mt-1" style="font-family:'Manrope',system-ui,sans-serif;">{price}</p>
+              </a>
+            </article>
+          );
+        })}
+      </div>
+    )}
+
+    <div class="mt-16 pt-10 border-t border-white/10 flex flex-wrap gap-6">
+      <a href="/collections/graphic-tees" class="text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">Graphic tees →</a>
+      <a href="/collections/lifestyle" class="text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">Lifestyle →</a>
+      <a href="/about" class="text-sm text-gold hover:text-gold-light transition-colors" style="font-family:'Manrope',system-ui,sans-serif;">Our story →</a>
+    </div>
+  </div>
+</Base>

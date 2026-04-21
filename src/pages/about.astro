@@ -1,0 +1,109 @@
+---
+import Base from '../layouts/Base.astro';
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://harmony-threads-xk7p.vercel.app';
+
+const breadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": siteUrl },
+    { "@type": "ListItem", "position": 2, "name": "About", "item": `${siteUrl}/about` }
+  ]
+};
+
+const orgSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Harmony Threads",
+  "url": siteUrl,
+  "description": "Music-inspired apparel and digital goods. Founded 2026.",
+  "foundingDate": "2026"
+};
+---
+
+<Base
+  title="Our Story | Harmony Threads"
+  description="Harmony Threads was started by music fans who couldn't find merch worth wearing. We make graphic tees and digital goods that actually carry the spirit of the music."
+  structuredData={[breadcrumb, orgSchema]}
+>
+  <div class="pt-32 pb-20 max-w-7xl mx-auto px-6">
+
+    <nav class="flex items-center gap-2 text-xs text-muted mb-16" style="font-family:'Manrope',system-ui,sans-serif;">
+      <a href="/" class="hover:text-cream transition-colors">Home</a>
+      <span>/</span>
+      <span class="text-cream">About</span>
+    </nav>
+
+    <!-- Hero section -->
+    <div class="grid lg:grid-cols-2 gap-16 mb-20">
+      <div>
+        <p class="text-gold text-xs font-semibold tracking-widest uppercase mb-4" style="font-family:'Manrope',system-ui,sans-serif;">Our story</p>
+        <h1 class="text-5xl font-semibold text-cream leading-tight mb-8" style="font-family:'Playfair Display',Georgia,serif;">
+          Why we started this
+        </h1>
+        <div class="space-y-5 text-muted leading-relaxed" style="font-family:'Manrope',system-ui,sans-serif;">
+          <p>We grew up going to shows. The kind where you'd leave with your ears ringing and your shirt soaked and somehow feel more yourself than when you walked in. The music was everything.</p>
+          <p>But the merch? Generic. Oversized. Printed on the cheapest cotton they could find. You'd buy it because you wanted to remember the night, then never wear it because it looked terrible by the third wash.</p>
+          <p>Harmony Threads started in 2026 with a simple premise: what if the merchandise was actually worth wearing? What if it was made for people who want to carry the music with them — not just out of the parking lot, but every day?</p>
+          <p>We work with Harmony Publishing to extend that same philosophy to digital goods. If you want to understand why The Band sounds like that, or how six decades of rock history connect, we've got the deep dive.</p>
+        </div>
+      </div>
+      <div class="relative">
+        <div class="aspect-[4/5] bg-charcoal-2 rounded-sm overflow-hidden">
+          <img
+            src="https://picsum.photos/seed/aboutband/800/1000"
+            alt="Music fans wearing Harmony Threads graphic tees at a concert"
+            class="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+        <div class="absolute -bottom-6 -left-6 bg-charcoal border border-white/10 p-5 rounded-sm">
+          <p class="text-3xl font-semibold text-cream" style="font-family:'Playfair Display',Georgia,serif;">2026</p>
+          <p class="text-xs text-muted mt-1" style="font-family:'Manrope',system-ui,sans-serif;">Founded by music fans</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Values -->
+    <div class="border-t border-white/10 pt-16 mb-20">
+      <h2 class="text-3xl font-semibold text-cream mb-10" style="font-family:'Playfair Display',Georgia,serif;">What we believe</h2>
+      <div class="grid md:grid-cols-3 gap-8">
+        {[
+          {
+            heading: 'Music deserves better merch',
+            copy: 'If the record is great, the tee should be too. We\'re not going to put a legendary band\'s name on something that falls apart after six months.'
+          },
+          {
+            heading: 'Quality has a longer memory',
+            copy: 'A 150g ring-spun tee that softens with age. A book you actually finish. Goods that earn their place in your life rather than ending up in a donation bin.'
+          },
+          {
+            heading: 'The story matters',
+            copy: 'We\'re not flipping trends. The bands, the sounds, the history — it\'s all worth knowing, worth wearing, worth passing on.'
+          },
+        ].map(v => (
+          <div class="border-t border-gold/30 pt-6">
+            <h3 class="text-lg font-semibold text-cream mb-3" style="font-family:'Playfair Display',Georgia,serif;">{v.heading}</h3>
+            <p class="text-muted text-sm leading-relaxed" style="font-family:'Manrope',system-ui,sans-serif;">{v.copy}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="bg-charcoal-2 border border-white/10 rounded-sm p-10 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div>
+        <h2 class="text-2xl font-semibold text-cream mb-2" style="font-family:'Playfair Display',Georgia,serif;">Ready to shop?</h2>
+        <p class="text-muted text-sm" style="font-family:'Manrope',system-ui,sans-serif;">
+          Browse <a href="/collections/graphic-tees" class="text-gold hover:text-gold-light">graphic tees</a>, <a href="/collections/digital-downloads" class="text-gold hover:text-gold-light">digital downloads</a>, and more.
+        </p>
+      </div>
+      <a href="/shop"
+        class="flex-shrink-0 bg-gold text-charcoal font-semibold px-8 py-3 rounded-sm hover:bg-gold-light transition-colors text-sm"
+        style="font-family:'Manrope',system-ui,sans-serif;">
+        Shop the collection
+      </a>
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,46 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { requireAdmin } from '../../lib/requireAdmin';
+import { ssrClient } from '../../lib/supabase';
+
+const gate = await requireAdmin(Astro);
+if (gate) return gate;
+
+const sb = ssrClient(Astro.cookies);
+const { data: subscribers } = await sb
+  .from('subscribers')
+  .select('*')
+  .order('created_at', { ascending: false });
+---
+
+<AdminLayout title="Subscribers">
+  <p style="font-size:13px; color:#9A9189; margin-bottom:16px;">
+    {subscribers?.length ?? 0} total subscribers
+  </p>
+
+  <div style="background:#1A1A1A; border:1px solid rgba(255,255,255,0.08); border-radius:6px; overflow:hidden;">
+    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+      <thead>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+          <th style="text-align:left; padding:12px 16px; color:#9A9189; font-weight:500;">Email</th>
+          <th style="text-align:left; padding:12px 16px; color:#9A9189; font-weight:500;">Source</th>
+          <th style="text-align:left; padding:12px 16px; color:#9A9189; font-weight:500;">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {(subscribers ?? []).map(s => (
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:12px 16px; color:#F0EDE8;">{s.email}</td>
+            <td style="padding:12px 16px; color:#9A9189;">{s.source ?? 'newsletter'}</td>
+            <td style="padding:12px 16px; color:#9A9189; font-size:11px;">
+              {s.created_at ? new Date(s.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—'}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    {(!subscribers || subscribers.length === 0) && (
+      <div style="text-align:center; padding:40px; color:#9A9189;">No subscribers yet.</div>
+    )}
+  </div>
+</AdminLayout>
